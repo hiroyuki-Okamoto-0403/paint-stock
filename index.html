@@ -138,7 +138,7 @@
         ['カラー番号', '色名', 'メーカー', '種類', '仕上げ', '所持数']
       ];
       paints.forEach(p => {
-        csvRows.push([p.code || '', p.name, p.maker, p.type, p.finish, p.count]);https://github.com/hiroyuki-Okamoto-0403/paint-stock/blob/main/index.html
+        csvRows.push([p.code || '', p.name, p.maker, p.type, p.finish, p.count]);
       });
       const blob = new Blob([csvRows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
       const a = document.createElement('a');
