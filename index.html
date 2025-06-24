@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>塗料在庫管理</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 1em;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    .form-group, .search-group {
+      margin-bottom: 1em;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.2em;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.5em;
+      margin-bottom: 0.5em;
+    }
+    .card {
+      background: white;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 0.5em;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .color-box {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 1px solid #ccc;
+      vertical-align: middle;
+      margin-right: 0.5em;
+    }
+    .controls button {
+      width: auto;
+      margin-right: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <h1>塗料在庫管理</h1>
+
+  <div class="form-group">
+    <label for="colorName">色名</label>
+    <input id="colorName" type="text"/>
+
+    <label for="maker">メーカー</label>
+    <input id="maker" type="text"/>
+
+    <label for="type">種類</label>
+    <select id="type">
+      <option value="ラッカー">ラッカー</option>
+      <option value="水性">水性</option>
+      <option value="エナメル">エナメル</option>
+    </select>
+
+    <label for="colorCode">色見本</label>
+    <input id="colorCode" type="color" value="#000000"/>
+
+    <label for="count">所持数</label>
+    <input id="count" type="number" value="1" min="1"/>
+
+    <button onclick="addColor()">＋ カラーを追加</button>
+    <button onclick="exportCSV()">CSV出力</button>
+  </div>
+
+  <div class="search-group">
+    <input id="searchQuery" type="text" placeholder="色名やメーカーで検索"/>
+    <select id="searchType">
+      <option value="">全種類</option>
+      <option value="ラッカー">ラッカー</option>
+      <option value="水性">水性</option>
+      <option value="エナメル">エナメル</option>
+    </select>
+    <button onclick="renderList()">検索</button>
+  </div>
+
+  <div id="paintList"></div>
+
+  <script>
+    let paints = JSON.parse(localStorage.getItem('paints') || '[]');
+
+    function save() {
+      localStorage.setItem('paints', JSON.stringify(paints));
+    }
+
+    function addColor() {
+      const name = document.getElementById('colorName').value;
+      const maker = document.getElementById('maker').value;
+      const type = document.getElementById('type').value;
+      const count = parseInt(document.getElementById('count').value);
+      const color = document.getElementById('colorCode').value;
+      if (!name || !maker || count < 1) return;
+      paints.push({ name, maker, type, count, color });
+      save();
+      renderList();
+    }
+
+    function changeCount(index, delta) {
+      paints[index].count = Math.max(0, paints[index].count + delta);
+      save();
+      renderList();
+    }
+
+    function deleteColor(index) {
+      if (confirm('このカラーを削除しますか？')) {
+        paints.splice(index, 1);
+        save();
+        renderList();
+      }
+    }
+
+    function exportCSV() {
+      const csvRows = [
+        ['色名', 'メーカー', '種類', '所持数', '色コード']
+      ];
+      paints.forEach(p => {
+        csvRows.push([p.name, p.maker, p.type, p.count, p.color || '']);
+      });
+      const blob = new Blob([csvRows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'paints.csv';
+      a.click();
+    }
+
+    function renderList() {
+      const query = document.getElementById('searchQuery').value.toLowerCase();
+      const typeFilter = document.getElementById('searchType').value;
+      const container = document.getElementById('paintList');
+      container.innerHTML = '';
+      paints.forEach((p, i) => {
+        if (
+          (query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) ||
+          (typeFilter && p.type !== typeFilter)
+        ) return;
+        const div = document.createElement('div');
+        div.className = 'card';
+        const colorBox = `<span class="color-box" style="background:${p.color || '#ccc'}"></span>`;
+        div.innerHTML = `
+          ${colorBox}<strong>${p.name}</strong>（${p.maker}）<br>
+          ${p.type}｜所持数：${p.count}<br>
+          <div class="controls">
+            <button onclick="changeCount(${i}, 1)">＋</button>
+            <button onclick="changeCount(${i}, -1)">−</button>
+            <button onclick="deleteColor(${i})">削除</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
