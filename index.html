@@ -5,26 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>塗料在庫管理</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 1em;
-      background: #f4f4f4;
-    }
-    h1 {
-      text-align: center;
-    }
-    .form-group, .search-group {
-      margin-bottom: 1em;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.2em;
-    }
+    body { font-family: sans-serif; margin: 1em; background: #f4f4f4; }
+    h1 { text-align: center; }
+    .form-group, .search-group { margin-bottom: 1em; }
+    label { display: block; margin-bottom: 0.2em; }
     input, select, button {
-      width: 100%;
       padding: 0.5em;
       margin-bottom: 0.5em;
     }
+    input[type="text"], input[type="number"], select {
+      width: 25%;
+    }
+    button { width: auto; }
     .card {
       background: white;
       padding: 1em;
@@ -32,10 +24,8 @@
       border-radius: 0.5em;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    .controls button {
-      width: auto;
-      margin-right: 0.5em;
-    }
+    .controls button { width: auto; margin-right: 0.5em; }
+    #authButtons { text-align: center; margin: 1em 0; }
   </style>
 </head>
 <body>
