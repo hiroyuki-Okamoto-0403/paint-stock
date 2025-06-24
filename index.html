@@ -51,6 +51,9 @@
   <h1>塗料在庫管理</h1>
 
   <div class="form-group">
+    <label for="code">カラー番号</label>
+    <input id="code" type="text" />
+
     <label for="colorName">色名</label>
     <input id="colorName" type="text"/>
 
@@ -62,6 +65,14 @@
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
+    </select>
+
+    <label for="finish">仕上げ</label>
+    <select id="finish">
+      <option value="艶あり">艶あり</option>
+      <option value="半光沢">半光沢</option>
+      <option value="艶なし">艶なし</option>
+      <option value="メタリック">メタリック</option>
     </select>
 
     <label for="colorCode">色見本</label>
@@ -95,13 +106,15 @@
     }
 
     function addColor() {
+      const code = document.getElementById('code').value;
       const name = document.getElementById('colorName').value;
       const maker = document.getElementById('maker').value;
       const type = document.getElementById('type').value;
+      const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
       const color = document.getElementById('colorCode').value;
       if (!name || !maker || count < 1) return;
-      paints.push({ name, maker, type, count, color });
+      paints.push({ code, name, maker, type, finish, count, color });
       save();
       renderList();
     }
@@ -122,10 +135,10 @@
 
     function exportCSV() {
       const csvRows = [
-        ['色名', 'メーカー', '種類', '所持数', '色コード']
+        ['カラー番号', '色名', 'メーカー', '種類', '仕上げ', '所持数', '色コード']
       ];
       paints.forEach(p => {
-        csvRows.push([p.name, p.maker, p.type, p.count, p.color || '']);
+        csvRows.push([p.code || '', p.name, p.maker, p.type, p.finish, p.count, p.color || '']);
       });
       const blob = new Blob([csvRows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
       const a = document.createElement('a');
@@ -148,8 +161,8 @@
         div.className = 'card';
         const colorBox = `<span class="color-box" style="background:${p.color || '#ccc'}"></span>`;
         div.innerHTML = `
-          ${colorBox}<strong>${p.name}</strong>（${p.maker}）<br>
-          ${p.type}｜所持数：${p.count}<br>
+          ${colorBox}<strong>${p.code || ''} ${p.name}</strong>（${p.maker}）<br>
+          ${p.type}｜${p.finish}｜所持数：${p.count}<br>
           <div class="controls">
             <button onclick="changeCount(${i}, 1)">＋</button>
             <button onclick="changeCount(${i}, -1)">−</button>
