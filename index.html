@@ -47,6 +47,11 @@
       font-weight: bold;
       color: red;
     }
+    #totalCount {
+      margin-top: 1em;
+      font-weight: bold;
+      text-align: center;
+    }
     @media screen and (max-width: 600px) {
       .card { font-size: 1em; }
       .card-details { font-size: 0.9em; }
@@ -62,12 +67,19 @@
     <label for="colorName">色名</label>
     <input id="colorName" type="text"/>
     <label for="maker">メーカー</label>
-    <input id="maker" type="text"/>
+    <select id="maker">
+      <option value="シタデル">シタデル</option>
+      <option value="タミヤ">タミヤ</option>
+      <option value="NAZCA">NAZCA</option>
+      <option value="MR.HOBBY">MR.HOBBY</option>
+      <option value="ガイア">ガイア</option>
+    </select>
     <label for="type">種類</label>
     <select id="type">
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
+      <option value="アクリル">アクリル</option>
     </select>
     <label for="finish">仕上げ</label>
     <select id="finish">
@@ -90,12 +102,14 @@
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
+      <option value="アクリル">アクリル</option>
     </select>
     <button onclick="renderList()">検索</button>
   </div>
 
   <div id="paintList"></div>
   <div id="noStockSection"></div>
+  <div id="totalCount"></div>
 
   <script>
     let paints = JSON.parse(localStorage.getItem('paints') || '[]');
@@ -107,7 +121,7 @@
     function addColor() {
       const code = document.getElementById('code').value.trim();
       const name = document.getElementById('colorName').value.trim();
-      const maker = document.getElementById('maker').value.trim();
+      const maker = document.getElementById('maker').value;
       const type = document.getElementById('type').value;
       const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
@@ -205,8 +219,11 @@
       const typeFilter = document.getElementById('searchType').value;
       const container = document.getElementById('paintList');
       const noStockContainer = document.getElementById('noStockSection');
+      const totalDisplay = document.getElementById('totalCount');
       container.innerHTML = '';
       noStockContainer.innerHTML = '';
+      totalDisplay.innerHTML = '';
+      let totalCount = 0;
       const noStockList = [];
 
       paints.forEach((p, i) => {
@@ -214,6 +231,8 @@
           (query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) ||
           (typeFilter && p.type !== typeFilter)
         ) return;
+
+        totalCount += p.count;
 
         const div = document.createElement('div');
         div.className = 'card';
@@ -242,6 +261,8 @@
         noStockContainer.appendChild(header);
         noStockList.forEach(card => noStockContainer.appendChild(card));
       }
+
+      totalDisplay.textContent = `全塗料の総所持数：${totalCount}`;
     }
 
     renderList();
