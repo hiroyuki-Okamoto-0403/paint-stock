@@ -14,10 +14,11 @@
       margin-bottom: 0.5em;
     }
     input[type="text"], input[type="number"], select {
-      width: 25%;
+      width: 100%;
+      max-width: 300px;
     }
     input[type="number"] {
-      width: 10%;
+      max-width: 100px;
     }
     button { width: auto; }
     .card {
@@ -27,7 +28,7 @@
       border-radius: 0.5em;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
       font-size: 0.9em;
-      max-width: 400px;
+      max-width: 100%;
     }
     .card-details {
       font-size: 0.8em;
@@ -45,6 +46,10 @@
       margin-top: 2em;
       font-weight: bold;
       color: red;
+    }
+    @media screen and (max-width: 600px) {
+      .card { font-size: 1em; }
+      .card-details { font-size: 0.9em; }
     }
   </style>
 </head>
@@ -109,10 +114,15 @@
 
       if (!name || !code || count < 1) return;
 
-      const existing = paints.find(p => p.code === code && p.name === name && p.maker === maker && p.type === type && p.finish === finish);
+      const existing = paints.find(p => p.code === code);
 
       if (existing) {
-        existing.count += count;
+        if (existing.name === name) {
+          existing.count += count;
+        } else {
+          alert('このカラーナンバーはすでに別の色名で登録されています。');
+          return;
+        }
       } else {
         paints.push({ code, name, maker, type, finish, count });
       }
@@ -168,7 +178,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         let text = e.target.result;
-        text = text.replace(/^\uFEFF/, ''); // BOM削除
+        text = text.replace(/^\uFEFF/, '');
         const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
         const newPaints = [];
         for (let i = 1; i < rows.length; i++) {
