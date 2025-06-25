@@ -166,8 +166,12 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        const text = e.target.result;
-        const rows = text.split(/\r?\n/);
+        let text = e.target.result;
+        // BOMを削除
+        text = text.replace(/^﻿/, '');
+        const rows = text.split(/
+?
+/).filter(r => r.trim() !== '');
         const newPaints = [];
         for (let i = 1; i < rows.length; i++) {
           const cols = rows[i].split(',');
@@ -181,6 +185,12 @@
             count: parseInt(cols[5])
           });
         }
+        paints = newPaints;
+        save();
+        renderList();
+      };
+      reader.readAsText(file, 'utf-8');
+    }
         paints = newPaints;
         save();
         renderList();
