@@ -30,10 +30,13 @@
       max-width: 400px;
     }
     .controls button {
-      width: auto;
+      width: 2em;
       margin-right: 0.3em;
       font-size: 0.7em;
       padding: 0.2em 0.4em;
+    }
+    .controls button.edit, .controls button.delete {
+      width: auto;
     }
   </style>
 </head>
@@ -184,8 +187,8 @@
           <div class="controls">
             <button onclick="changeCount(${i}, 1)">＋</button>
             <button onclick="changeCount(${i}, -1)">−</button>
-            <button onclick="editColor(${i})">修正</button>
-            <button onclick="deleteColor(${i})">削除</button>
+            <button class="edit" onclick="editColor(${i})">修正</button>
+            <button class="delete" onclick="deleteColor(${i})">削除</button>
           </div>
         `;
         container.appendChild(div);
