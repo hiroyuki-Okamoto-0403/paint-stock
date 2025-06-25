@@ -109,7 +109,7 @@
 
       if (!name || !code || count < 1) return;
 
-      const existing = paints.find(p => p.code === code && p.name === name);
+      const existing = paints.find(p => p.code === code && p.name === name && p.maker === maker && p.type === type && p.finish === finish);
 
       if (existing) {
         existing.count += count;
