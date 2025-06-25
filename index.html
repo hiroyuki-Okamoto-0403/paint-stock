@@ -38,6 +38,11 @@
     .controls button.edit, .controls button.delete {
       width: auto;
     }
+    #noStockHeader {
+      margin-top: 2em;
+      font-weight: bold;
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +87,7 @@
   </div>
 
   <div id="paintList"></div>
+  <div id="noStockSection"></div>
 
   <script>
     let paints = JSON.parse(localStorage.getItem('paints') || '[]');
@@ -97,7 +103,7 @@
       const type = document.getElementById('type').value;
       const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
-      if (!name || !maker || count < 1) return;
+      if (!name || !maker || count < 0) return;
       paints.push({ code, name, maker, type, finish, count });
       save();
       renderList();
@@ -173,12 +179,17 @@
       const query = document.getElementById('searchQuery').value.toLowerCase();
       const typeFilter = document.getElementById('searchType').value;
       const container = document.getElementById('paintList');
+      const noStockContainer = document.getElementById('noStockSection');
       container.innerHTML = '';
+      noStockContainer.innerHTML = '';
+      const noStockList = [];
+
       paints.forEach((p, i) => {
         if (
           (query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) ||
           (typeFilter && p.type !== typeFilter)
         ) return;
+
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
@@ -191,8 +202,21 @@
             <button class="delete" onclick="deleteColor(${i})">削除</button>
           </div>
         `;
-        container.appendChild(div);
+
+        if (p.count === 0) {
+          noStockList.push(div);
+        } else {
+          container.appendChild(div);
+        }
       });
+
+      if (noStockList.length > 0) {
+        const header = document.createElement('div');
+        header.id = 'noStockHeader';
+        header.textContent = '在庫なしのカラー';
+        noStockContainer.appendChild(header);
+        noStockList.forEach(card => noStockContainer.appendChild(card));
+      }
     }
 
     renderList();
