@@ -14,11 +14,10 @@
       margin-bottom: 0.5em;
     }
     input[type="text"], input[type="number"], select {
-      width: 100%;
-      max-width: 300px;
+      width: 25%;
     }
     input[type="number"] {
-      max-width: 100px;
+      width: 10%;
     }
     button { width: auto; }
     .card {
@@ -28,7 +27,7 @@
       border-radius: 0.5em;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
       font-size: 0.9em;
-      max-width: 25%;
+      max-width: 400px;
     }
     .card-details {
       font-size: 0.8em;
@@ -47,16 +46,6 @@
       font-weight: bold;
       color: red;
     }
-    #totalCount {
-      font-weight: bold;
-      margin-left: 1em;
-      display: inline-block;
-      vertical-align: middle;
-    }
-    @media screen and (max-width: 600px) {
-      .card { font-size: 1em; max-width: 100%; }
-      .card-details { font-size: 0.9em; }
-    }
   </style>
 </head>
 <body>
@@ -68,19 +57,12 @@
     <label for="colorName">色名</label>
     <input id="colorName" type="text"/>
     <label for="maker">メーカー</label>
-    <select id="maker">
-      <option value="MR.HOBBY">MR.HOBBY</option>
-      <option value="ガイア">ガイア</option>
-      <option value="タミヤ">タミヤ</option>
-      <option value="NAZCA">NAZCA</option>
-      <option value="シタデル">シタデル</option>
-    </select>
+    <input id="maker" type="text"/>
     <label for="type">種類</label>
     <select id="type">
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
-      <option value="アクリル">アクリル</option>
     </select>
     <label for="finish">仕上げ</label>
     <select id="finish">
@@ -103,17 +85,156 @@
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
-      <option value="アクリル">アクリル</option>
     </select>
     <button onclick="renderList()">検索</button>
-    <span id="totalCount"></span>
   </div>
 
   <div id="paintList"></div>
   <div id="noStockSection"></div>
 
   <script>
-    // JavaScriptのコードはそのまま維持（変更不要）
+    let paints = JSON.parse(localStorage.getItem('paints') || '[]');
+
+    function save() {
+      localStorage.setItem('paints', JSON.stringify(paints));
+    }
+
+    function addColor() {
+      const code = document.getElementById('code').value.trim();
+      const name = document.getElementById('colorName').value.trim();
+      const maker = document.getElementById('maker').value.trim();
+      const type = document.getElementById('type').value;
+      const finish = document.getElementById('finish').value;
+      const count = parseInt(document.getElementById('count').value);
+
+      if (!name || !code || count < 1) return;
+
+      const existing = paints.find(p => p.code === code && p.name === name && p.maker === maker && p.type === type && p.finish === finish);
+
+      if (existing) {
+        existing.count += count;
+      } else {
+        paints.push({ code, name, maker, type, finish, count });
+      }
+
+      save();
+      renderList();
+    }
+
+    function changeCount(index, delta) {
+      paints[index].count = Math.max(0, paints[index].count + delta);
+      save();
+      renderList();
+    }
+
+    function deleteColor(index) {
+      if (confirm('このカラーを削除しますか？')) {
+        paints.splice(index, 1);
+        save();
+        renderList();
+      }
+    }
+
+    function editColor(index) {
+      const p = paints[index];
+      document.getElementById('code').value = p.code || '';
+      document.getElementById('colorName').value = p.name;
+      document.getElementById('maker').value = p.maker;
+      document.getElementById('type').value = p.type;
+      document.getElementById('finish').value = p.finish;
+      document.getElementById('count').value = p.count;
+      paints.splice(index, 1);
+      save();
+      renderList();
+    }
+
+    function exportCSV() {
+      const csvRows = [['カラー番号','色名','メーカー','種類','仕上げ','所持数']];
+      paints.forEach(p => csvRows.push([p.code || '', p.name, p.maker, p.type, p.finish, p.count]));
+      const csvContent = '\uFEFF' + csvRows.map(r => r.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'paints.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function importCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let text = e.target.result;
+        text = text.replace(/^\uFEFF/, ''); // BOM削除
+        const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
+        const newPaints = [];
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i].split(',');
+          if (cols.length < 6) continue;
+          newPaints.push({
+            code: cols[0],
+            name: cols[1],
+            maker: cols[2],
+            type: cols[3],
+            finish: cols[4],
+            count: parseInt(cols[5])
+          });
+        }
+        paints = newPaints;
+        save();
+        renderList();
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    function renderList() {
+      const query = document.getElementById('searchQuery').value.toLowerCase();
+      const typeFilter = document.getElementById('searchType').value;
+      const container = document.getElementById('paintList');
+      const noStockContainer = document.getElementById('noStockSection');
+      container.innerHTML = '';
+      noStockContainer.innerHTML = '';
+      const noStockList = [];
+
+      paints.forEach((p, i) => {
+        if (
+          (query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) ||
+          (typeFilter && p.type !== typeFilter)
+        ) return;
+
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <strong>${p.code || ''} ${p.name}</strong><br>
+          <div class="card-details">${p.maker}｜${p.type}｜${p.finish}｜所持数：${p.count}</div>
+          <div class="controls">
+            <button onclick="changeCount(${i}, 1)">＋</button>
+            <button onclick="changeCount(${i}, -1)">−</button>
+            <button class="edit" onclick="editColor(${i})">修正</button>
+            <button class="delete" onclick="deleteColor(${i})">削除</button>
+          </div>
+        `;
+
+        if (p.count === 0) {
+          noStockList.push(div);
+        } else {
+          container.appendChild(div);
+        }
+      });
+
+      if (noStockList.length > 0) {
+        const header = document.createElement('div');
+        header.id = 'noStockHeader';
+        header.textContent = '在庫なしのカラー';
+        noStockContainer.appendChild(header);
+        noStockList.forEach(card => noStockContainer.appendChild(card));
+      }
+    }
+
+    renderList();
   </script>
 </body>
 </html>
