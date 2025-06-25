@@ -47,8 +47,8 @@
       color: red;
     }
     #totalCount {
-      margin-top: 0.5em;
       font-weight: bold;
+      margin-top: 0.5em;
     }
   </style>
 </head>
@@ -61,7 +61,13 @@
     <label for="colorName">色名</label>
     <input id="colorName" type="text"/>
     <label for="maker">メーカー</label>
-    <input id="maker" type="text"/>
+    <select id="maker">
+      <option value="MR.HOBBY">MR.HOBBY</option>
+      <option value="ガイア">ガイア</option>
+      <option value="タミヤ">タミヤ</option>
+      <option value="NAZCA">NAZCA</option>
+      <option value="シタデル">シタデル</option>
+    </select>
     <label for="type">種類</label>
     <select id="type">
       <option value="ラッカー">ラッカー</option>
@@ -84,8 +90,8 @@
   </div>
 
   <div class="search-group">
-    <input id="searchQuery" type="text" placeholder="色名やメーカーで検索" style="width: 50%;"/>
-    <select id="searchType" style="width: 50%;">
+    <input id="searchQuery" type="text" placeholder="色名やメーカーで検索"/>
+    <select id="searchType">
       <option value="">全種類</option>
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
@@ -109,7 +115,7 @@
     function addColor() {
       const code = document.getElementById('code').value.trim();
       const name = document.getElementById('colorName').value.trim();
-      const maker = document.getElementById('maker').value.trim();
+      const maker = document.getElementById('maker').value;
       const type = document.getElementById('type').value;
       const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
@@ -202,15 +208,20 @@
       const typeFilter = document.getElementById('searchType').value;
       const container = document.getElementById('paintList');
       const noStockContainer = document.getElementById('noStockSection');
+      const totalCountElem = document.getElementById('totalCount');
       container.innerHTML = '';
       noStockContainer.innerHTML = '';
       const noStockList = [];
+
+      let totalCount = 0;
 
       paints.forEach((p, i) => {
         if (
           (query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) ||
           (typeFilter && p.type !== typeFilter)
         ) return;
+
+        totalCount += p.count;
 
         const div = document.createElement('div');
         div.className = 'card';
@@ -240,9 +251,7 @@
         noStockList.forEach(card => noStockContainer.appendChild(card));
       }
 
-      // 総所持数を計算して表示
-      const totalCount = paints.reduce((acc, cur) => acc + cur.count, 0);
-      document.getElementById('totalCount').textContent = `総所持数：${totalCount}`;
+      totalCountElem.textContent = `総所持数: ${totalCount}`;
     }
 
     renderList();
