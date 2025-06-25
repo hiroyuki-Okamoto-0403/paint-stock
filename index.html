@@ -29,6 +29,9 @@
       font-size: 0.9em;
       max-width: 400px;
     }
+    .card-details {
+      font-size: 0.8em;
+    }
     .controls button {
       width: 2em;
       margin-right: 0.3em;
@@ -193,8 +196,8 @@
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
-          <strong>${p.code || ''} ${p.name}</strong>（${p.maker}）<br>
-          ${p.type}｜${p.finish}｜所持数：${p.count}<br>
+          <strong>${p.code || ''} ${p.name}</strong><br>
+          <div class="card-details">${p.maker}｜${p.type}｜${p.finish}｜所持数：${p.count}</div>
           <div class="controls">
             <button onclick="changeCount(${i}, 1)">＋</button>
             <button onclick="changeCount(${i}, -1)">−</button>
