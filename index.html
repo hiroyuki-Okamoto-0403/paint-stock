@@ -48,9 +48,10 @@
       color: red;
     }
     #totalCount {
-      margin-top: 1em;
       font-weight: bold;
-      text-align: center;
+      margin-left: 1em;
+      display: inline-block;
+      vertical-align: middle;
     }
     @media screen and (max-width: 600px) {
       .card { font-size: 1em; }
@@ -105,11 +106,11 @@
       <option value="アクリル">アクリル</option>
     </select>
     <button onclick="renderList()">検索</button>
+    <span id="totalCount"></span>
   </div>
 
   <div id="paintList"></div>
   <div id="noStockSection"></div>
-  <div id="totalCount"></div>
 
   <script>
     let paints = JSON.parse(localStorage.getItem('paints') || '[]');
