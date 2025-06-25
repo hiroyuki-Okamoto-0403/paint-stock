@@ -54,6 +54,7 @@
     <input id="count" type="number" value="1" min="1"/>
     <button onclick="addColor()">＋ カラーを追加</button>
     <button onclick="exportCSV()">CSV出力</button>
+    <input type="file" id="csvInput" accept=".csv" onchange="importCSV(event)"/>
   </div>
 
   <div class="search-group">
@@ -125,6 +126,34 @@
       a.href = URL.createObjectURL(blob);
       a.download = 'paints.csv';
       a.click();
+    }
+
+    function importCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const rows = text.split(/\r?\n/);
+        const newPaints = [];
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i].split(',');
+          if (cols.length < 6) continue;
+          newPaints.push({
+            code: cols[0],
+            name: cols[1],
+            maker: cols[2],
+            type: cols[3],
+            finish: cols[4],
+            count: parseInt(cols[5])
+          });
+        }
+        paints = newPaints;
+        save();
+        renderList();
+      };
+      reader.readAsText(file);
     }
 
     function renderList() {
