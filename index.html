@@ -107,14 +107,15 @@
       const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
 
-      if (!name || !maker || count < 1) return;
+      if (!name || !code || count < 1) return;
 
-      const existing = paints.find(p => p.code === code && p.name === name && p.maker === maker && p.type === type && p.finish === finish);
+      const existing = paints.find(p => p.code === code && p.name === name);
 
       if (existing) {
         existing.count += count;
       } else {
         paints.push({ code, name, maker, type, finish, count });
+      });
       }
 
       save();
