@@ -46,9 +46,9 @@
       font-weight: bold;
       color: red;
     }
-    #totalCountDisplay {
+    #totalCount {
       margin-top: 0.5em;
-      font-size: 0.9em;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -67,6 +67,7 @@
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
+      <option value="アクリル">アクリル</option>
     </select>
     <label for="finish">仕上げ</label>
     <select id="finish">
@@ -83,15 +84,16 @@
   </div>
 
   <div class="search-group">
-    <input id="searchQuery" type="text" placeholder="色名やメーカーで検索" style="width: 25%;"/>
-    <select id="searchType" style="width: 25%;">
+    <input id="searchQuery" type="text" placeholder="色名やメーカーで検索" style="width: 50%;"/>
+    <select id="searchType" style="width: 50%;">
       <option value="">全種類</option>
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
+      <option value="アクリル">アクリル</option>
     </select>
     <button onclick="renderList()">検索</button>
-    <div id="totalCountDisplay"></div>
+    <div id="totalCount"></div>
   </div>
 
   <div id="paintList"></div>
@@ -173,14 +175,19 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         let text = e.target.result;
-        text = text.replace(/^\uFEFF/, '');
+        text = text.replace(/^\uFEFF/, ''); // BOM削除
         const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
         const newPaints = [];
         for (let i = 1; i < rows.length; i++) {
           const cols = rows[i].split(',');
           if (cols.length < 6) continue;
           newPaints.push({
-            code: cols[0], name: cols[1], maker: cols[2], type: cols[3], finish: cols[4], count: parseInt(cols[5])
+            code: cols[0],
+            name: cols[1],
+            maker: cols[2],
+            type: cols[3],
+            finish: cols[4],
+            count: parseInt(cols[5])
           });
         }
         paints = newPaints;
@@ -195,16 +202,15 @@
       const typeFilter = document.getElementById('searchType').value;
       const container = document.getElementById('paintList');
       const noStockContainer = document.getElementById('noStockSection');
-      const totalCountDisplay = document.getElementById('totalCountDisplay');
       container.innerHTML = '';
       noStockContainer.innerHTML = '';
-      totalCountDisplay.textContent = '';
       const noStockList = [];
 
-      let totalCount = 0;
-
       paints.forEach((p, i) => {
-        if ((query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) || (typeFilter && p.type !== typeFilter)) return;
+        if (
+          (query && !p.name.toLowerCase().includes(query) && !p.maker.toLowerCase().includes(query)) ||
+          (typeFilter && p.type !== typeFilter)
+        ) return;
 
         const div = document.createElement('div');
         div.className = 'card';
@@ -218,8 +224,6 @@
             <button class="delete" onclick="deleteColor(${i})">削除</button>
           </div>
         `;
-
-        totalCount += p.count;
 
         if (p.count === 0) {
           noStockList.push(div);
@@ -236,7 +240,9 @@
         noStockList.forEach(card => noStockContainer.appendChild(card));
       }
 
-      totalCountDisplay.textContent = `総所持数: ${totalCount}`;
+      // 総所持数を計算して表示
+      const totalCount = paints.reduce((acc, cur) => acc + cur.count, 0);
+      document.getElementById('totalCount').textContent = `総所持数：${totalCount}`;
     }
 
     renderList();
