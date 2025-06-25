@@ -100,14 +100,23 @@
     }
 
     function addColor() {
-      const code = document.getElementById('code').value;
-      const name = document.getElementById('colorName').value;
-      const maker = document.getElementById('maker').value;
+      const code = document.getElementById('code').value.trim();
+      const name = document.getElementById('colorName').value.trim();
+      const maker = document.getElementById('maker').value.trim();
       const type = document.getElementById('type').value;
       const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
-      if (!name || !maker || count < 0) return;
-      paints.push({ code, name, maker, type, finish, count });
+
+      if (!name || !maker || count < 1) return;
+
+      const existing = paints.find(p => p.code === code && p.name === name && p.maker === maker && p.type === type && p.finish === finish);
+
+      if (existing) {
+        existing.count += count;
+      } else {
+        paints.push({ code, name, maker, type, finish, count });
+      }
+
       save();
       renderList();
     }
