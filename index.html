@@ -115,7 +115,6 @@
         existing.count += count;
       } else {
         paints.push({ code, name, maker, type, finish, count });
-      });
       }
 
       save();
@@ -157,7 +156,9 @@
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'paints.csv';
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     }
 
     function importCSV(event) {
@@ -167,11 +168,8 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         let text = e.target.result;
-        // BOMを削除
-        text = text.replace(/^﻿/, '');
-        const rows = text.split(/
-?
-/).filter(r => r.trim() !== '');
+        text = text.replace(/^\uFEFF/, ''); // BOM削除
+        const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
         const newPaints = [];
         for (let i = 1; i < rows.length; i++) {
           const cols = rows[i].split(',');
@@ -190,12 +188,6 @@
         renderList();
       };
       reader.readAsText(file, 'utf-8');
-    }
-        paints = newPaints;
-        save();
-        renderList();
-      };
-      reader.readAsText(file);
     }
 
     function renderList() {
