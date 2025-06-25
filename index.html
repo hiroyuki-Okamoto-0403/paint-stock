@@ -20,7 +20,7 @@
       width: 10%;
     }
     .search-group input[type="text"] {
-      width: 50%;
+      width: 25%;
     }
     button { width: auto; }
     .card {
@@ -60,19 +60,12 @@
     <label for="colorName">色名</label>
     <input id="colorName" type="text"/>
     <label for="maker">メーカー</label>
-    <select id="maker">
-      <option value="MR.HOBBY">MR.HOBBY</option>
-      <option value="ガイア">ガイア</option>
-      <option value="タミヤ">タミヤ</option>
-      <option value="NAZCA">NAZCA</option>
-      <option value="シタデル">シタデル</option>
-    </select>
+    <input id="maker" type="text"/>
     <label for="type">種類</label>
     <select id="type">
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
-      <option value="アクリル">アクリル</option>
     </select>
     <label for="finish">仕上げ</label>
     <select id="finish">
@@ -95,10 +88,8 @@
       <option value="ラッカー">ラッカー</option>
       <option value="水性">水性</option>
       <option value="エナメル">エナメル</option>
-      <option value="アクリル">アクリル</option>
     </select>
     <button onclick="renderList()">検索</button>
-    <span id="totalCount"></span>
   </div>
 
   <div id="paintList"></div>
@@ -114,17 +105,16 @@
     function addColor() {
       const code = document.getElementById('code').value.trim();
       const name = document.getElementById('colorName').value.trim();
-      const maker = document.getElementById('maker').value;
+      const maker = document.getElementById('maker').value.trim();
       const type = document.getElementById('type').value;
       const finish = document.getElementById('finish').value;
       const count = parseInt(document.getElementById('count').value);
 
       if (!name || !code || count < 1) return;
 
-      const existing = paints.find(p => p.code === code && p.name === name);
+      const existing = paints.find(p => p.code === code && p.name === name && p.maker === maker && p.type === type && p.finish === finish);
 
       if (existing) {
-        alert('同じカラー番号と色名が既に登録されています。所持数を更新します。');
         existing.count += count;
       } else {
         paints.push({ code, name, maker, type, finish, count });
@@ -181,15 +171,19 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         let text = e.target.result;
-        text = text.replace(/^\uFEFF/, '');
+        text = text.replace(/^\uFEFF/, ''); // BOM削除
         const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
         const newPaints = [];
         for (let i = 1; i < rows.length; i++) {
           const cols = rows[i].split(',');
           if (cols.length < 6) continue;
           newPaints.push({
-            code: cols[0], name: cols[1], maker: cols[2],
-            type: cols[3], finish: cols[4], count: parseInt(cols[5])
+            code: cols[0],
+            name: cols[1],
+            maker: cols[2],
+            type: cols[3],
+            finish: cols[4],
+            count: parseInt(cols[5])
           });
         }
         paints = newPaints;
@@ -204,11 +198,9 @@
       const typeFilter = document.getElementById('searchType').value;
       const container = document.getElementById('paintList');
       const noStockContainer = document.getElementById('noStockSection');
-      const totalCountElem = document.getElementById('totalCount');
       container.innerHTML = '';
       noStockContainer.innerHTML = '';
       const noStockList = [];
-      let total = 0;
 
       paints.forEach((p, i) => {
         if (
@@ -216,7 +208,6 @@
           (typeFilter && p.type !== typeFilter)
         ) return;
 
-        total += p.count;
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
@@ -236,8 +227,6 @@
           container.appendChild(div);
         }
       });
-
-      totalCountElem.textContent = `総所持数: ${total}`;
 
       if (noStockList.length > 0) {
         const header = document.createElement('div');
